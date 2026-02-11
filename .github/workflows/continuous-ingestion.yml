@@ -1,0 +1,36 @@
+name: continuous-ingestion
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      dataset_id:
+        description: "Optional single dataset id"
+        required: false
+        default: ""
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    env:
+      HDB_CONTINUOUS_FAILURE_THRESHOLD: "3"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Sync deps
+        run: uv sync --all-extras --frozen
+      - name: Run continuous ingestion
+        run: |
+          if [ -n "${{ github.event.inputs.dataset_id }}" ]; then
+            uv run hdb run-continuous --dataset-id "${{ github.event.inputs.dataset_id }}"
+          else
+            uv run hdb run-continuous
+          fi
+      - name: Upload latest manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: continuous-manifests
+          path: manifests/

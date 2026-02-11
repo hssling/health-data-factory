@@ -34,6 +34,7 @@ just serve
 ```bash
 uv run hdb list
 uv run hdb run demo_dataset --full-refresh
+uv run hdb run-continuous
 uv run hdb validate demo_dataset
 uv run hdb export-omop demo_dataset
 uv run hdb export-fhir demo_dataset
@@ -51,6 +52,7 @@ uv run hdb serve-api
 ## CI/CD
 - `ci.yml`: ruff, mypy, pytest on PRs and main.
 - `nightly-build.yml`: scheduled dataset build + validation + exporters + artifact upload.
+- `continuous-ingestion.yml`: hourly ingestion for datasets with `continuous.enabled=true`.
 - `deploy.yml`: builds/pushes API and worker images to GHCR and supports optional webhook deployment.
 
 ## DVC

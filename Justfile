@@ -29,6 +29,9 @@ run dataset_id="demo_dataset" full_refresh="false":
 run-all:
 	uv run hdb run-all
 
+run-continuous dataset_id="":
+	if ("{{dataset_id}}" -eq "") { uv run hdb run-continuous } else { uv run hdb run-continuous --dataset-id {{dataset_id}} }
+
 validate dataset_id="demo_dataset":
 	uv run hdb validate {{dataset_id}}
 

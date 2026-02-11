@@ -11,6 +11,7 @@ just ci
 Run demo pipeline:
 ```bash
 just run demo_dataset
+just run-continuous
 ```
 
 Serve API:
@@ -53,6 +54,7 @@ just publish-kaggle demo_dataset
 ## CI/CD overview
 - PR checks: ruff, mypy, pytest.
 - Nightly schedule: run demo dataset, validate, export, publish workflow artifacts.
+- Hourly schedule: continuous ingestion for datasets opted-in via registry.
 - Deploy workflow: build/push GHCR images and optional webhook deployment.
 - Platform workflow: publish artifacts and baseline model to HF/Kaggle.
 

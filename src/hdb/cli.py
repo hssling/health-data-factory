@@ -9,6 +9,7 @@ from pipelines.engine import (
     export_fhir_for_dataset,
     export_omop_for_dataset,
     run_all_datasets,
+    run_continuous_ingestion,
     run_dataset_build,
     validate_dataset_outputs,
 )
@@ -30,6 +31,8 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--full-refresh", action="store_true")
 
     sub.add_parser("run-all")
+    run_cont = sub.add_parser("run-continuous")
+    run_cont.add_argument("--dataset-id", default=None)
 
     validate = sub.add_parser("validate")
     validate.add_argument("dataset_id")
@@ -69,6 +72,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "run-all":
         run_all_datasets()
         return 0
+    if args.command == "run-continuous":
+        continuous_result = run_continuous_ingestion(dataset_id=args.dataset_id)
+        print(json.dumps(continuous_result, indent=2))
+        return 0
     if args.command == "validate":
         result: dict[str, Any] = validate_dataset_outputs(args.dataset_id)
         print(json.dumps(result, indent=2))
@@ -80,16 +87,16 @@ def main(argv: list[str] | None = None) -> int:
         export_fhir_for_dataset(args.dataset_id)
         return 0
     if args.command == "publish-hf":
-        result = publish_to_huggingface(args.dataset_id)
-        print(json.dumps(result, indent=2))
+        hf_result = publish_to_huggingface(args.dataset_id)
+        print(json.dumps(hf_result, indent=2))
         return 0
     if args.command == "publish-kaggle":
-        result = publish_to_kaggle(args.dataset_id)
-        print(json.dumps(result, indent=2))
+        kaggle_result = publish_to_kaggle(args.dataset_id)
+        print(json.dumps(kaggle_result, indent=2))
         return 0
     if args.command == "publish-all":
-        result = publish_all_targets(args.dataset_id)
-        print(json.dumps(result, indent=2))
+        all_result = publish_all_targets(args.dataset_id)
+        print(json.dumps(all_result, indent=2))
         return 0
     if args.command == "serve-api":
         uvicorn.run("apps.api.main:app", host="0.0.0.0", port=8000, reload=False)

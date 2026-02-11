@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -157,6 +158,61 @@ def run_all_datasets() -> list[Path]:
     settings = get_settings()
     registry = load_registry(settings.registry_path)
     return [run_dataset_build(dataset.id, full_refresh=False) for dataset in registry.datasets]
+
+
+def _parse_manifest_timestamp(value: str) -> datetime:
+    return datetime.strptime(value, "%Y%m%dT%H%M%SZ").replace(tzinfo=UTC)
+
+
+def _dataset_due_for_continuous(dataset: DatasetConfig, now: datetime) -> bool:
+    settings = get_settings()
+    dataset_root = settings.manifest_dir / dataset.id
+    if not dataset_root.exists():
+        return True
+    run_dirs = sorted([item for item in dataset_root.iterdir() if item.is_dir()], reverse=True)
+    for run_dir in run_dirs:
+        manifest_path = run_dir / "manifest.json"
+        if not manifest_path.exists():
+            continue
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        last_ts = _parse_manifest_timestamp(str(manifest["timestamp"]))
+        min_delta = timedelta(minutes=dataset.continuous.min_interval_minutes)
+        return now - last_ts >= min_delta
+    return True
+
+
+def run_continuous_ingestion(dataset_id: str | None = None) -> dict[str, Any]:
+    settings = get_settings()
+    registry = load_registry(settings.registry_path)
+    now = datetime.now(UTC)
+    selected: list[DatasetConfig] = []
+    for dataset in registry.datasets:
+        if dataset_id and dataset.id != dataset_id:
+            continue
+        if dataset.continuous.enabled and _dataset_due_for_continuous(dataset, now):
+            selected.append(dataset)
+
+    results: list[dict[str, str]] = []
+    failures = 0
+    for dataset in selected:
+        try:
+            manifest_path = run_dataset_build(dataset.id, full_refresh=False)
+            results.append(
+                {"dataset_id": dataset.id, "status": "built", "manifest": str(manifest_path)}
+            )
+            failures = 0
+        except Exception as exc:
+            failures += 1
+            results.append({"dataset_id": dataset.id, "status": "failed", "error": str(exc)})
+            if failures >= settings.continuous_failure_threshold:
+                break
+
+    return {
+        "selected_count": len(selected),
+        "executed_count": len(results),
+        "failure_threshold": settings.continuous_failure_threshold,
+        "results": results,
+    }
 
 
 def validate_dataset_outputs(dataset_id: str) -> dict[str, Any]:

@@ -24,6 +24,11 @@ class OutputSchemas(BaseModel):
     fhir: str | None = None
 
 
+class ContinuousPolicy(BaseModel):
+    enabled: bool = False
+    min_interval_minutes: int = 60
+
+
 class SourceConfig(BaseModel):
     connector: str
     params: dict[str, Any] = Field(default_factory=dict)
@@ -38,6 +43,7 @@ class DatasetConfig(BaseModel):
     pii_policy: PiiPolicy
     validations_suite: str
     output_schemas: OutputSchemas
+    continuous: ContinuousPolicy = Field(default_factory=ContinuousPolicy)
     sources: list[SourceConfig]
 
 

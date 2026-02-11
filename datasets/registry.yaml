@@ -7,6 +7,9 @@ datasets:
     title: "Life Expectancy (OWID Grapher sample)"
     description: "Deterministic build from OWID life expectancy CSV, normalized to canonical schema."
     refresh_cron: "0 2 * * *"
+    continuous:
+      enabled: true
+      min_interval_minutes: 60
     license:
       name: "CC BY 4.0"
       url: "https://creativecommons.org/licenses/by/4.0/"
