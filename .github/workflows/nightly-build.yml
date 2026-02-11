@@ -19,6 +19,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HDB_HF_DATASET_REPO_ID: ${{ vars.HDB_HF_DATASET_REPO_ID }}
+      HDB_HF_MODEL_REPO_ID: ${{ vars.HDB_HF_MODEL_REPO_ID }}
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      HDB_KAGGLE_DATASET_SLUG: ${{ vars.HDB_KAGGLE_DATASET_SLUG }}
+      HDB_KAGGLE_MODEL_SLUG: ${{ vars.HDB_KAGGLE_MODEL_SLUG }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
@@ -47,19 +55,10 @@ jobs:
             data/gold/
             manifests/
       - name: Publish to Hugging Face (optional)
-        if: ${{ secrets.HF_TOKEN != '' && vars.HDB_HF_DATASET_REPO_ID != '' && vars.HDB_HF_MODEL_REPO_ID != '' }}
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HDB_HF_DATASET_REPO_ID: ${{ vars.HDB_HF_DATASET_REPO_ID }}
-          HDB_HF_MODEL_REPO_ID: ${{ vars.HDB_HF_MODEL_REPO_ID }}
+        if: ${{ env.HF_TOKEN != '' && env.HDB_HF_DATASET_REPO_ID != '' && env.HDB_HF_MODEL_REPO_ID != '' }}
         run: uv run hdb publish-hf ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
       - name: Publish to Kaggle (optional)
-        if: ${{ secrets.KAGGLE_USERNAME != '' && secrets.KAGGLE_KEY != '' && vars.HDB_KAGGLE_DATASET_SLUG != '' && vars.HDB_KAGGLE_MODEL_SLUG != '' }}
-        env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          HDB_KAGGLE_DATASET_SLUG: ${{ vars.HDB_KAGGLE_DATASET_SLUG }}
-          HDB_KAGGLE_MODEL_SLUG: ${{ vars.HDB_KAGGLE_MODEL_SLUG }}
+        if: ${{ env.KAGGLE_USERNAME != '' && env.KAGGLE_KEY != '' && env.HDB_KAGGLE_DATASET_SLUG != '' && env.HDB_KAGGLE_MODEL_SLUG != '' }}
         run: |
           uv pip install kaggle
           uv run hdb publish-kaggle ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
