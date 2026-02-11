@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      IMAGE_PUSH_ENABLED: ${{ vars.ENABLE_IMAGE_PUSH || 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,20 +31,31 @@ jobs:
           echo "worker_image=${{ env.REGISTRY }}/${repo_name}/worker" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-
-      - name: Build and push API image
+        if: ${{ env.IMAGE_PUSH_ENABLED == 'true' }}
         run: |
-          docker build -f infra/docker/Dockerfile.api -t "${{ steps.vars.outputs.api_image }}:latest" -t "${{ steps.vars.outputs.api_image }}:${{ github.sha }}" .
+          token="${GHCR_TOKEN:-${{ secrets.GITHUB_TOKEN }}}"
+          echo "$token" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Build API image
+        run: |
+          docker build -f infra/docker/Dockerfile.api -t "${{ steps.vars.outputs.api_image }}:latest" -t "${{ steps.vars.outputs.api_image }}:${{ github.sha }}" .          
+
+      - name: Push API image
+        if: ${{ env.IMAGE_PUSH_ENABLED == 'true' }}
+        run: |
           docker push "${{ steps.vars.outputs.api_image }}:latest"
           docker push "${{ steps.vars.outputs.api_image }}:${{ github.sha }}"
 
-      - name: Build and push worker image
+      - name: Build worker image
         run: |
           docker build -f infra/docker/Dockerfile.pipeline -t "${{ steps.vars.outputs.worker_image }}:latest" -t "${{ steps.vars.outputs.worker_image }}:${{ github.sha }}" .
+
+      - name: Push worker image
+        if: ${{ env.IMAGE_PUSH_ENABLED == 'true' }}
+        run: |
           docker push "${{ steps.vars.outputs.worker_image }}:latest"
           docker push "${{ steps.vars.outputs.worker_image }}:${{ github.sha }}"
 
       - name: Trigger deployment webhook (optional)
-        if: ${{ env.DEPLOY_WEBHOOK_URL != '' }}
+        if: ${{ env.IMAGE_PUSH_ENABLED == 'true' && env.DEPLOY_WEBHOOK_URL != '' }}
         run: curl -X POST "${{ env.DEPLOY_WEBHOOK_URL }}"

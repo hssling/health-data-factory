@@ -7,9 +7,12 @@
 
 ## GitHub configuration
 1. Ensure repository Actions are enabled.
-2. Add secrets:
+2. Add repository variable:
+   - `ENABLE_IMAGE_PUSH=true` to enable image pushes and webhook deployment.
+3. Add secrets:
+   - `GHCR_TOKEN` (recommended): PAT with `write:packages` scope.
    - `DEPLOY_WEBHOOK_URL` (optional): endpoint used to trigger your runtime platform deploy.
-3. Confirm `GITHUB_TOKEN` has package write permissions (workflow already requests this).
+4. Confirm `GITHUB_TOKEN` has package write permissions (workflow already requests this).
 
 ## Container images
 `deploy.yml` publishes:
@@ -39,4 +42,3 @@ For R2:
 uv run dvc remote modify localremote url s3://my-r2-bucket/health-data-factory
 uv run dvc remote modify localremote endpointurl https://<accountid>.r2.cloudflarestorage.com
 ```
-
