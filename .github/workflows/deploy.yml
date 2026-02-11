@@ -16,6 +16,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -42,5 +44,5 @@ jobs:
           docker push "${{ steps.vars.outputs.worker_image }}:${{ github.sha }}"
 
       - name: Trigger deployment webhook (optional)
-        if: ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
-        run: curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"
+        if: ${{ env.DEPLOY_WEBHOOK_URL != '' }}
+        run: curl -X POST "${{ env.DEPLOY_WEBHOOK_URL }}"
