@@ -1,0 +1,61 @@
+[project]
+name = "health-data-factory"
+version = "0.1.0"
+description = "Production-grade monorepo for compliant health dataset building and publishing."
+readme = "docs/README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0,<1.0.0",
+  "uvicorn>=0.30.0,<1.0.0",
+  "prefect>=2.18.0,<3.0.0",
+  "pandera[pandas]>=0.20.0,<1.0.0",
+  "dvc[s3]>=3.60.0,<4.0.0",
+  "pandas>=2.2.0,<3.0.0",
+  "pyarrow>=17.0.0,<22.0.0",
+  "pydantic>=2.8.0,<3.0.0",
+  "pyyaml>=6.0.2,<7.0.0",
+  "requests>=2.32.0,<3.0.0",
+  "tenacity>=9.0.0,<10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0,<9.0.0",
+  "pytest-cov>=5.0.0,<6.0.0",
+  "mypy>=1.11.0,<2.0.0",
+  "ruff>=0.6.0,<1.0.0",
+  "httpx>=0.27.0,<1.0.0",
+  "pandas-stubs>=2.2.2.240909",
+  "types-requests>=2.32.0.20241016",
+  "types-PyYAML>=6.0.12.20250516",
+]
+
+[project.scripts]
+hdb = "hdb.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hdb", "apps", "connectors", "pipelines", "transforms", "validators", "exporters"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "apps", "connectors", "pipelines", "transforms", "validators", "exporters", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+exclude = ["^\\.venv/", "^build/", "^dist/"]
+mypy_path = ["src", "."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

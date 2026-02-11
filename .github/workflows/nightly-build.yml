@@ -1,0 +1,48 @@
+name: nightly-build
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dataset_id:
+        description: "Dataset id to build"
+        required: false
+        default: "demo_dataset"
+      full_refresh:
+        description: "Run full refresh"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Sync deps
+        run: uv sync --all-extras --frozen
+      - name: Build dataset
+        run: |
+          if [ "${{ github.event.inputs.full_refresh || 'false' }}" = "true" ]; then
+            uv run hdb run ${{ github.event.inputs.dataset_id || 'demo_dataset' }} --full-refresh
+          else
+            uv run hdb run ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
+          fi
+      - name: Validate dataset
+        run: uv run hdb validate ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
+      - name: Export OMOP
+        run: uv run hdb export-omop ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
+      - name: Export FHIR
+        run: uv run hdb export-fhir ${{ github.event.inputs.dataset_id || 'demo_dataset' }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-artifacts
+          path: |
+            data/gold/
+            manifests/

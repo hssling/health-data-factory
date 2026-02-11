@@ -1,0 +1,28 @@
+html_allowlist:
+  - ourworldindata.org
+  - raw.githubusercontent.com
+
+datasets:
+  - id: demo_dataset
+    title: "Life Expectancy (OWID Grapher sample)"
+    description: "Deterministic build from OWID life expectancy CSV, normalized to canonical schema."
+    refresh_cron: "0 2 * * *"
+    license:
+      name: "CC BY 4.0"
+      url: "https://creativecommons.org/licenses/by/4.0/"
+      attribution: "Our World in Data"
+    pii_policy:
+      block_if_suspected: true
+      declared_deidentified: true
+    validations_suite: canonical_v1
+    output_schemas:
+      canonical: canonical_v1
+      omop: omop_subset_v1
+      fhir: fhir_r4_minimal_v1
+    sources:
+      - connector: http_csv
+        params:
+          url: "https://ourworldindata.org/grapher/life-expectancy.csv?download-format=tab"
+          access_type: file
+          timeout_seconds: 30
+          expected_content_type: "text/csv|text/tab-separated-values"
