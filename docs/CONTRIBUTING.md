@@ -23,9 +23,9 @@ just ci
 - Add/adjust pandera checks.
 - Add tests for parser, validation, and outputs.
 - Confirm PII gate behavior.
+- Confirm HF/Kaggle publication payload shape still works when schema changes.
 
 ## Definition of done
 - `ruff`, `mypy`, and `pytest` pass.
 - Build manifest includes hashes, provenance, license, and validation results.
 - Documentation reflects user-facing behavior changes.
-

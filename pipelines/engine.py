@@ -23,6 +23,7 @@ from hdb.manifest import (
 from hdb.pii import detect_pii
 from hdb.registry import DatasetConfig, load_registry
 from hdb.settings import get_settings
+from pipelines.modeling import train_baseline_model
 
 LOGGER = logging.getLogger(__name__)
 
@@ -102,6 +103,8 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
     omop_outputs = export_omop_subset(canonical_df, omop_dir)
     fhir_dir = gold_dir / "fhir"
     fhir_output = export_fhir_bundle(canonical_df, fhir_dir, dataset_id=dataset_id)
+    model_dir = gold_dir / "models"
+    model_outputs = train_baseline_model(canonical_df, model_dir)
 
     license_path = manifest_dir / "LICENSE.md"
     license_path.write_text(
@@ -120,6 +123,8 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
         codebook_md,
         license_path,
         Path(fhir_output),
+        Path(model_outputs["model"]),
+        Path(model_outputs["metrics"]),
     ]
     all_outputs.extend(Path(path) for path in omop_outputs.values())
     manifest_payload: dict[str, Any] = {
@@ -141,6 +146,7 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
         "gold_outputs": [str(gold_path)],
         "codebook": {"json": str(codebook_json), "markdown": str(codebook_md)},
         "exporters": {"omop": omop_outputs, "fhir": str(fhir_output)},
+        "models": model_outputs,
     }
     write_manifest(manifest_dir / "manifest.json", manifest_payload)
     LOGGER.info("build complete for dataset_id=%s rows=%s", dataset_id, len(canonical_df))

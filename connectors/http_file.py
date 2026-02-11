@@ -45,12 +45,9 @@ class HttpCsvConnector(BaseConnector):
         accepted_types = [item.strip() for item in expected_content_type.split("|") if item.strip()]
         if accepted_types and not any(item in content_type for item in accepted_types):
             message = (
-                "unexpected content type. "
-                f"expected one of '{accepted_types}', got '{content_type}'"
+                f"unexpected content type. expected one of '{accepted_types}', got '{content_type}'"
             )
-            raise ComplianceError(
-                message
-            )
+            raise ComplianceError(message)
 
         run_dir.mkdir(parents=True, exist_ok=True)
         output_path = run_dir / "raw_source.tsv"

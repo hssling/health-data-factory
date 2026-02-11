@@ -38,5 +38,14 @@ export-omop dataset_id="demo_dataset":
 export-fhir dataset_id="demo_dataset":
 	uv run hdb export-fhir {{dataset_id}}
 
+publish-hf dataset_id="demo_dataset":
+	uv run hdb publish-hf {{dataset_id}}
+
+publish-kaggle dataset_id="demo_dataset":
+	uv run hdb publish-kaggle {{dataset_id}}
+
+publish-all dataset_id="demo_dataset":
+	uv run hdb publish-all {{dataset_id}}
+
 serve:
 	uv run hdb serve-api

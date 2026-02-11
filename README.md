@@ -37,8 +37,16 @@ uv run hdb run demo_dataset --full-refresh
 uv run hdb validate demo_dataset
 uv run hdb export-omop demo_dataset
 uv run hdb export-fhir demo_dataset
+uv run hdb publish-hf demo_dataset
+uv run hdb publish-kaggle demo_dataset
+uv run hdb publish-all demo_dataset
 uv run hdb serve-api
 ```
+
+## Platform Publishing
+- Hugging Face Dataset + Model publication is supported in CI and CLI.
+- Kaggle publication is supported for dataset artifacts and model bundle artifacts.
+- Each build also produces a baseline model artifact in `data/gold/<dataset>/<timestamp>/models/`.
 
 ## CI/CD
 - `ci.yml`: ruff, mypy, pytest on PRs and main.

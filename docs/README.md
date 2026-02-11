@@ -18,6 +18,12 @@ Serve API:
 just serve
 ```
 
+Publish latest artifacts:
+```bash
+just publish-hf demo_dataset
+just publish-kaggle demo_dataset
+```
+
 ## Key folders
 - `connectors/`: source extractors with compliance checks and caching.
 - `pipelines/`: Prefect flows and build engine.
@@ -48,10 +54,10 @@ just serve
 - PR checks: ruff, mypy, pytest.
 - Nightly schedule: run demo dataset, validate, export, publish workflow artifacts.
 - Deploy workflow: build/push GHCR images and optional webhook deployment.
+- Platform workflow: publish artifacts and baseline model to HF/Kaggle.
 
 ## Operations references
 - Compliance: `docs/COMPLIANCE.md`
 - Security: `docs/SECURITY.md`
 - Deployment: `docs/DEPLOYMENT.md`
 - ADRs: `docs/adrs/`
-

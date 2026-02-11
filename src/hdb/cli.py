@@ -14,6 +14,7 @@ from pipelines.engine import (
 )
 
 from hdb.logging_config import configure_logging
+from hdb.publish import publish_all_targets, publish_to_huggingface, publish_to_kaggle
 from hdb.registry import load_registry
 from hdb.settings import get_settings
 
@@ -38,6 +39,15 @@ def _build_parser() -> argparse.ArgumentParser:
 
     fhir = sub.add_parser("export-fhir")
     fhir.add_argument("dataset_id")
+
+    publish_hf = sub.add_parser("publish-hf")
+    publish_hf.add_argument("dataset_id")
+
+    publish_kaggle = sub.add_parser("publish-kaggle")
+    publish_kaggle.add_argument("dataset_id")
+
+    publish_all = sub.add_parser("publish-all")
+    publish_all.add_argument("dataset_id")
 
     sub.add_parser("serve-api")
     return parser
@@ -68,6 +78,18 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "export-fhir":
         export_fhir_for_dataset(args.dataset_id)
+        return 0
+    if args.command == "publish-hf":
+        result = publish_to_huggingface(args.dataset_id)
+        print(json.dumps(result, indent=2))
+        return 0
+    if args.command == "publish-kaggle":
+        result = publish_to_kaggle(args.dataset_id)
+        print(json.dumps(result, indent=2))
+        return 0
+    if args.command == "publish-all":
+        result = publish_all_targets(args.dataset_id)
+        print(json.dumps(result, indent=2))
         return 0
     if args.command == "serve-api":
         uvicorn.run("apps.api.main:app", host="0.0.0.0", port=8000, reload=False)

@@ -15,6 +15,10 @@ class Settings:
     )
     cache_dir: Path = Path(os.getenv("HDB_CACHE_DIR", ".cache/hdb"))
     request_timeout: int = int(os.getenv("HDB_REQUEST_TIMEOUT", "30"))
+    kaggle_dataset_slug: str = os.getenv("HDB_KAGGLE_DATASET_SLUG", "")
+    kaggle_model_slug: str = os.getenv("HDB_KAGGLE_MODEL_SLUG", "")
+    hf_dataset_repo_id: str = os.getenv("HDB_HF_DATASET_REPO_ID", "")
+    hf_model_repo_id: str = os.getenv("HDB_HF_MODEL_REPO_ID", "")
 
 
 def get_settings() -> Settings:
