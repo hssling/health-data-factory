@@ -1,9 +1,14 @@
 name: deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      push_images:
+        description: "Push images to GHCR"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 permissions:
   contents: read
@@ -19,7 +24,7 @@ jobs:
     env:
       DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      IMAGE_PUSH_ENABLED: ${{ vars.ENABLE_IMAGE_PUSH || 'false' }}
+      IMAGE_PUSH_ENABLED: ${{ github.event.inputs.push_images || vars.ENABLE_IMAGE_PUSH || 'false' }}
     steps:
       - uses: actions/checkout@v4
 
