@@ -19,6 +19,6 @@ COPY datasets ./datasets
 COPY manifests ./manifests
 COPY data ./data
 
-RUN uv sync --frozen --all-extras
+RUN uv sync --frozen
 
 CMD ["uv", "run", "hdb", "run", "demo_dataset"]

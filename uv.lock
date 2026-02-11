@@ -1487,7 +1487,6 @@ name = "health-data-factory"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "dvc", extra = ["s3"] },
     { name = "fastapi" },
     { name = "pandas" },
     { name = "pandera", extra = ["pandas"] },
@@ -1502,6 +1501,7 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "dvc", extra = ["s3"] },
     { name = "httpx" },
     { name = "mypy" },
     { name = "pandas-stubs" },
@@ -1514,7 +1514,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dvc", extras = ["s3"], specifier = ">=3.60.0,<4.0.0" },
+    { name = "dvc", extras = ["s3"], marker = "extra == 'dev'", specifier = ">=3.60.0,<4.0.0" },
     { name = "fastapi", specifier = ">=0.115.0,<1.0.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27.0,<1.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.11.0,<2.0.0" },
