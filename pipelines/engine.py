@@ -10,7 +10,12 @@ import pandas as pd
 from connectors import CONNECTOR_REGISTRY
 from exporters.fhir import export_fhir_bundle
 from exporters.omop import export_omop_subset
-from transforms.canonical import CANONICAL_SCHEMA_VERSION, transform_life_expectancy
+from transforms.canonical import (
+    CANONICAL_SCHEMA_VERSION,
+    transform_life_expectancy,
+    transform_tb_resistance,
+    transform_tb_who_india,
+)
 from validators.checks import validate_canonical
 
 from hdb.codebook import generate_codebook
@@ -67,7 +72,7 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
 
     source = dataset.sources[0]
     connector_cls = CONNECTOR_REGISTRY[source.connector]
-    connector = connector_cls(
+    connector = connector_cls(  # type: ignore[abstract]
         cache_dir=settings.cache_dir / source.connector,
         user_agent=settings.user_agent,
         timeout_seconds=int(source.params.get("timeout_seconds", settings.request_timeout)),
@@ -81,9 +86,21 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
     )
     raw_df = pd.read_csv(fetched.local_path, sep=None, engine="python")
 
-    canonical_df = transform_life_expectancy(
-        raw_df, source_url=fetched.source_url, dataset_id=dataset_id
-    )
+    transform_key = str(source.params.get("transform", "life_expectancy"))
+    if transform_key == "life_expectancy":
+        canonical_df = transform_life_expectancy(
+            raw_df, source_url=fetched.source_url, dataset_id=dataset_id
+        )
+    elif transform_key == "tb_resistance":
+        canonical_df = transform_tb_resistance(
+            raw_df, source_url=fetched.source_url, dataset_id=dataset_id
+        )
+    elif transform_key == "tb_who_india":
+        canonical_df = transform_tb_who_india(
+            raw_df, source_url=fetched.source_url, dataset_id=dataset_id
+        )
+    else:
+        raise ValueError(f"Unsupported transform key: {transform_key}")
     pii_findings = detect_pii(canonical_df)
     if pii_findings and dataset.pii_policy.block_if_suspected:
         findings = [{"field": f.field, "reason": f.reason} for f in pii_findings]

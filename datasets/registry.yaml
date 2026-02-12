@@ -29,3 +29,53 @@ datasets:
           access_type: file
           timeout_seconds: 30
           expected_content_type: "text/csv|text/tab-separated-values"
+
+  - id: tb_india_resistance_local
+    title: "TB Drug Resistance (India, local)"
+    description: "Local TB merged resistance time series from D drive for modeling and export."
+    refresh_cron: "0 * * * *"
+    continuous:
+      enabled: true
+      min_interval_minutes: 60
+    license:
+      name: "Internal/Derived - verify before external publication"
+      url: "https://example.org/license-review-required"
+      attribution: "Local source files in D:\\data"
+    pii_policy:
+      block_if_suspected: true
+      declared_deidentified: true
+    validations_suite: canonical_v1
+    output_schemas:
+      canonical: canonical_v1
+      omop: omop_subset_v1
+      fhir: fhir_r4_minimal_v1
+    sources:
+      - connector: local_file
+        params:
+          path: "D:/data/tb_merged.csv"
+          transform: "tb_resistance"
+
+  - id: tb_who_india_local
+    title: "WHO TB India (local)"
+    description: "Local WHO TB India annual metrics from D drive."
+    refresh_cron: "0 3 * * *"
+    continuous:
+      enabled: true
+      min_interval_minutes: 1440
+    license:
+      name: "Internal/Derived - verify before external publication"
+      url: "https://example.org/license-review-required"
+      attribution: "Local WHO file in D:\\data\\tb_raw"
+    pii_policy:
+      block_if_suspected: true
+      declared_deidentified: true
+    validations_suite: canonical_v1
+    output_schemas:
+      canonical: canonical_v1
+      omop: omop_subset_v1
+      fhir: fhir_r4_minimal_v1
+    sources:
+      - connector: local_file
+        params:
+          path: "D:/data/tb_raw/who_tb_india.csv"
+          transform: "tb_who_india"

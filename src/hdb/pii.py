@@ -22,6 +22,11 @@ def detect_pii(df: pd.DataFrame) -> list[PiiFinding]:
         lowered = column.lower()
         if any(hint in lowered for hint in PII_COLUMN_HINTS):
             findings.append(PiiFinding(field=column, reason="column_name_hint"))
+        is_text_like = pd.api.types.is_string_dtype(df[column]) or pd.api.types.is_object_dtype(
+            df[column]
+        )
+        if not is_text_like:
+            continue
         series = df[column].dropna()
         if series.empty:
             continue

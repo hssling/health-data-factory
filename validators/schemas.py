@@ -1,7 +1,19 @@
 from __future__ import annotations
 
+import pandas as pd
 import pandera.pandas as pa
 from pandera.api.checks import Check
+
+
+def _observation_values_by_unit(df: pd.DataFrame) -> bool:
+    percent_mask = df["observation_unit"] == "percent"
+    years_mask = df["observation_unit"] == "years"
+    other_mask = ~(percent_mask | years_mask)
+    percent_ok = df.loc[percent_mask, "observation_value_num"].between(0, 100).all()
+    years_ok = df.loc[years_mask, "observation_value_num"].between(0, 150).all()
+    other_ok = (df.loc[other_mask, "observation_value_num"] >= 0).all()
+    return bool(percent_ok and years_ok and other_ok)
+
 
 canonical_v1_schema = pa.DataFrameSchema(
     {
@@ -21,10 +33,7 @@ canonical_v1_schema = pa.DataFrameSchema(
         "deidentified": pa.Column(bool, nullable=False),
     },
     checks=[
-        Check(
-            lambda df: df["observation_value_num"].between(0, 150).all(),
-            error="observations in range",
-        ),
+        Check(_observation_values_by_unit, error="observations in range by unit"),
         Check(lambda df: df["record_id"].is_unique, error="record_id must be unique"),
     ],
     strict=True,

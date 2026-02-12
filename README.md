@@ -35,6 +35,8 @@ just serve
 uv run hdb list
 uv run hdb run demo_dataset --full-refresh
 uv run hdb run-continuous
+uv run hdb run tb_india_resistance_local
+uv run hdb run tb_who_india_local
 uv run hdb validate demo_dataset
 uv run hdb export-omop demo_dataset
 uv run hdb export-fhir demo_dataset
