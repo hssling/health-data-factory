@@ -29,7 +29,7 @@ from hdb.manifest import (
 from hdb.pii import detect_pii
 from hdb.registry import DatasetConfig, load_registry
 from hdb.settings import get_settings
-from pipelines.modeling import train_baseline_model
+from pipelines.modeling import train_baseline_model, train_tb_forecast_artifacts
 
 LOGGER = logging.getLogger(__name__)
 
@@ -123,6 +123,8 @@ def run_dataset_build(dataset_id: str, full_refresh: bool = False) -> Path:
     fhir_output = export_fhir_bundle(canonical_df, fhir_dir, dataset_id=dataset_id)
     model_dir = gold_dir / "models"
     model_outputs = train_baseline_model(canonical_df, model_dir)
+    if dataset_id.startswith("tb_"):
+        model_outputs.update(train_tb_forecast_artifacts(canonical_df, model_dir))
 
     license_path = manifest_dir / "LICENSE.md"
     license_path.write_text(
@@ -214,8 +216,30 @@ def run_continuous_ingestion(dataset_id: str | None = None) -> dict[str, Any]:
     for dataset in selected:
         try:
             manifest_path = run_dataset_build(dataset.id, full_refresh=False)
+            publish_status = "skipped"
+            if settings.auto_publish_tb and dataset.id.startswith("tb_"):
+                from hdb.publish import publish_to_huggingface, publish_to_kaggle
+
+                hf_ok = "no"
+                kaggle_ok = "no"
+                try:
+                    publish_to_huggingface(dataset.id)
+                    hf_ok = "yes"
+                except Exception:
+                    hf_ok = "failed"
+                try:
+                    publish_to_kaggle(dataset.id)
+                    kaggle_ok = "yes"
+                except Exception:
+                    kaggle_ok = "failed"
+                publish_status = f"hf:{hf_ok},kaggle:{kaggle_ok}"
             results.append(
-                {"dataset_id": dataset.id, "status": "built", "manifest": str(manifest_path)}
+                {
+                    "dataset_id": dataset.id,
+                    "status": "built",
+                    "manifest": str(manifest_path),
+                    "publish": publish_status,
+                }
             )
             failures = 0
         except Exception as exc:

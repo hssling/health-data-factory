@@ -15,6 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HDB_CONTINUOUS_FAILURE_THRESHOLD: "3"
+      HDB_AUTO_PUBLISH_TB: "true"
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HDB_HF_DATASET_REPO_ID: ${{ vars.HDB_HF_DATASET_REPO_ID }}
+      HDB_HF_MODEL_REPO_ID: ${{ vars.HDB_HF_MODEL_REPO_ID }}
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      HDB_KAGGLE_DATASET_SLUG: ${{ vars.HDB_KAGGLE_DATASET_SLUG }}
+      HDB_KAGGLE_MODEL_SLUG: ${{ vars.HDB_KAGGLE_MODEL_SLUG }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4

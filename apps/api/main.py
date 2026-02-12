@@ -42,6 +42,11 @@ def datasets() -> list[DatasetSummary]:
     ]
 
 
+@app.get("/datasets/tb", response_model=list[DatasetSummary])
+def tb_datasets() -> list[DatasetSummary]:
+    return [item for item in datasets() if item.id.startswith("tb_")]
+
+
 @app.get("/datasets/{dataset_id}/latest-manifest")
 def latest_manifest(dataset_id: str) -> dict[str, Any]:
     settings = get_settings()
@@ -60,4 +65,25 @@ def artifacts(dataset_id: str) -> dict[str, Any]:
         "gold": manifest.get("gold_outputs", []),
         "exporters": manifest.get("exporters", {}),
         "codebook": manifest.get("codebook", {}),
+        "models": manifest.get("models", {}),
+    }
+
+
+@app.get("/datasets/tb/{dataset_id}/latest-manifest")
+def tb_latest_manifest(dataset_id: str) -> dict[str, Any]:
+    if not dataset_id.startswith("tb_"):
+        raise HTTPException(status_code=400, detail="dataset_id must start with 'tb_'")
+    return latest_manifest(dataset_id)
+
+
+@app.get("/datasets/tb/{dataset_id}/forecast")
+def tb_forecast(dataset_id: str) -> dict[str, Any]:
+    if not dataset_id.startswith("tb_"):
+        raise HTTPException(status_code=400, detail="dataset_id must start with 'tb_'")
+    manifest = latest_manifest(dataset_id)
+    models = manifest.get("models", {})
+    return {
+        "dataset_id": dataset_id,
+        "forecast": models.get("forecast"),
+        "forecast_metrics": models.get("forecast_metrics"),
     }

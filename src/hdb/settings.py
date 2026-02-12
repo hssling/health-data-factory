@@ -18,6 +18,7 @@ class Settings:
     hf_dataset_repo_id: str
     hf_model_repo_id: str
     continuous_failure_threshold: int
+    auto_publish_tb: bool
 
 
 def get_settings() -> Settings:
@@ -33,4 +34,5 @@ def get_settings() -> Settings:
         hf_dataset_repo_id=os.getenv("HDB_HF_DATASET_REPO_ID", ""),
         hf_model_repo_id=os.getenv("HDB_HF_MODEL_REPO_ID", ""),
         continuous_failure_threshold=int(os.getenv("HDB_CONTINUOUS_FAILURE_THRESHOLD", "3")),
+        auto_publish_tb=os.getenv("HDB_AUTO_PUBLISH_TB", "false").lower() == "true",
     )

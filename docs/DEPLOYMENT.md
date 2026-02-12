@@ -5,6 +5,7 @@
 - `nightly-build.yml`: scheduled dataset build and artifact publication.
   - Optional publish to Hugging Face and Kaggle.
 - `continuous-ingestion.yml`: hourly continuous run for registry-enabled datasets.
+  - Auto-publishes TB datasets to HF/Kaggle when credentials are configured.
 - `deploy.yml`: container image build/push to GHCR, optional webhook trigger.
   - Trigger manually via Actions `workflow_dispatch`.
 - `publish-platforms.yml`: manual platform publication workflow (HF/Kaggle).

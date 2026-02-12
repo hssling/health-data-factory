@@ -48,8 +48,11 @@ just publish-kaggle demo_dataset
 ## API endpoints
 - `GET /health`
 - `GET /datasets`
+- `GET /datasets/tb`
 - `GET /datasets/{dataset_id}/latest-manifest`
 - `GET /datasets/{dataset_id}/artifacts`
+- `GET /datasets/tb/{dataset_id}/latest-manifest`
+- `GET /datasets/tb/{dataset_id}/forecast`
 
 ## CI/CD overview
 - PR checks: ruff, mypy, pytest.

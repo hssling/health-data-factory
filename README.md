@@ -50,6 +50,7 @@ uv run hdb serve-api
 - Hugging Face Dataset + Model publication is supported in CI and CLI.
 - Kaggle publication is supported for dataset artifacts and model bundle artifacts.
 - Each build also produces a baseline model artifact in `data/gold/<dataset>/<timestamp>/models/`.
+- TB datasets additionally produce forecast artifacts (`tb_forecast.parquet`, `tb_forecast_metrics.json`).
 
 ## CI/CD
 - `ci.yml`: ruff, mypy, pytest on PRs and main.

@@ -46,10 +46,9 @@ def _bundle_publish_assets(dataset_id: str, target: str) -> tuple[Path, dict[str
             Path(manifest["codebook"]["json"]),
             Path(manifest["codebook"]["markdown"]),
             Path(manifest["exporters"]["fhir"]),
-            Path(manifest["models"]["model"]),
-            Path(manifest["models"]["metrics"]),
         ]
     )
+    files_to_copy.extend(Path(path) for path in manifest.get("models", {}).values())
     files_to_copy.extend(Path(path) for path in manifest["exporters"]["omop"].values())
     files_to_copy.append(_latest_manifest_path(dataset_id))
 
@@ -84,14 +83,24 @@ def publish_to_huggingface(dataset_id: str) -> dict[str, str]:
 
     model_bundle = bundle_dir / "model_bundle"
     model_bundle.mkdir(exist_ok=True)
-    for name in ("baseline_regressor.joblib", "baseline_metrics.json", "manifest.json"):
-        source = bundle_dir / name
-        (model_bundle / name).write_bytes(source.read_bytes())
+    for path in bundle_dir.iterdir():
+        if path.is_file() and (
+            path.name.endswith(".joblib")
+            or path.name.endswith("_metrics.json")
+            or path.name.endswith("_forecast.parquet")
+            or path.name == "manifest.json"
+            or path.name == "tb_forecast.parquet"
+        ):
+            (model_bundle / path.name).write_bytes(path.read_bytes())
 
+    baseline_metrics = {}
+    baseline_metrics_path = model_bundle / "baseline_metrics.json"
+    if baseline_metrics_path.exists():
+        baseline_metrics = json.loads(baseline_metrics_path.read_text(encoding="utf-8"))
     model_card = {
         "dataset_id": dataset_id,
         "timestamp": timestamp,
-        "metrics": json.loads((model_bundle / "baseline_metrics.json").read_text(encoding="utf-8")),
+        "metrics": baseline_metrics,
         "license": manifest["license"],
     }
     (model_bundle / "model_card.json").write_text(
